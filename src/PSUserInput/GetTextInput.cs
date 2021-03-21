@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace PSUserInput
 {
-    [Cmdlet(VerbsCommon.Get, "TextInput")]
+    [Cmdlet("Read", "TextInput")]
     [OutputType(typeof(string))]
     public class GetTextInput : Cmdlet
     {

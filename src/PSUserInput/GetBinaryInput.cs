@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace PSUserInput
 {
-    [Cmdlet(VerbsCommon.Get, "BinaryInput")]
+    [Cmdlet("Read", "BinaryInput")]
     [OutputType(typeof(bool))]
     public class GetBinaryInput : Cmdlet
     {

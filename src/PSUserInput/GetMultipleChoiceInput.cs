@@ -8,7 +8,7 @@ namespace PSUserInput
 {
     using Containers;
 
-    [Cmdlet(VerbsCommon.Get, "MultipleChoiceInput")]
+    [Cmdlet("Read", "MultipleChoiceInput")]
     [OutputType(typeof(MultipleChoiceAnswer), typeof(MultipleChoiceAnswer[]))]
     public class GetMultipleChoiceInput : Cmdlet
     {
