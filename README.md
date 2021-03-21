@@ -7,9 +7,10 @@ Building the module is as simple as running `dotnet build` on .NET Core in the r
 ## Installing The Module
 
 ### Script
-The script `installmod.ps1` in the project root will install the Powershell module.
+Running the powershell script `install.ps1` without arguements will enter an interactive install. Select a location for the module to be installed to.
+
+Note: You may require admin privileges/root to install in system directories.
 
 ### Manually
-1. Get the Powershell Module locations from the environmental variable `$env:PSModulePath.Split(';')`
-2. Make a `PSUserInput` directory in one of those locations
-3. Run the `copymod.ps1` script in the root of the project and give the script the absolute path to the newly created `PSUserInput` directory
+1. Create a `PSUserInput` directory in the desired location
+2. Run `install.ps1 {PATH TO LOCATION}`
