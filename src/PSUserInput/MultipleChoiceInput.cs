@@ -13,15 +13,15 @@ namespace PSUserInput
     public class GetMultipleChoiceInput : Cmdlet
     {
         [Parameter(
-            Mandatory = true, 
-            Position  = 0
+            Mandatory = true,
+            Position = 0
         )]
         [Alias("Question")]
         public string Message { get; set; }
 
         [Parameter(
             Mandatory = true,
-            Position  = 1
+            Position = 1
         )]
         public string[] Answers { get; set; }
 
@@ -52,11 +52,11 @@ namespace PSUserInput
                 )
             );
 
-            return new MultipleChoiceAnswer 
+            return new MultipleChoiceAnswer
             {
                 Position = number,
-                Index    = number - 1,
-                Answer   = Answers[number - 1]
+                Index = number - 1,
+                Answer = Answers[number - 1]
             };
         }
 
@@ -87,7 +87,7 @@ namespace PSUserInput
                 var input = Console.ReadLine();
                 numbers = ValidateListInput(input, Answers.Length);
             } while (numbers == null);
-            
+
             var answers = new List<MultipleChoiceAnswer>();
             foreach (var number in numbers)
             {
@@ -95,8 +95,8 @@ namespace PSUserInput
                     new MultipleChoiceAnswer
                     {
                         Position = number,
-                        Index    = number - 1,
-                        Answer   = Answers[number - 1]
+                        Index = number - 1,
+                        Answer = Answers[number - 1]
                     }
                 );
             }
@@ -122,7 +122,7 @@ namespace PSUserInput
         protected override void ProcessRecord()
         {
             base.ProcessRecord();
-            
+
             if (AcceptList)
                 WriteObject(GetInputs(ConstructMessage()));
             else
@@ -131,10 +131,12 @@ namespace PSUserInput
     }
 }
 
-namespace PSUserInput.Containers {
-    public class MultipleChoiceAnswer {
-        public int    Index    { get; set; }
-        public int    Position { get; set; }
-        public string Answer   { get; set; }
+namespace PSUserInput.Containers
+{
+    public class MultipleChoiceAnswer
+    {
+        public int Index { get; set; }
+        public int Position { get; set; }
+        public string Answer { get; set; }
     }
 }

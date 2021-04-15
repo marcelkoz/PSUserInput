@@ -10,7 +10,7 @@ namespace PSUserInput
     {
         [Parameter(
             Mandatory = true,
-            Position  = 0
+            Position = 0
         )]
         [Alias("Question")]
         public string Message { get; set; }
@@ -28,10 +28,10 @@ namespace PSUserInput
             string message = $"{Message}\n{Prompt}";
             Regex pattern = new Regex(
                 "(n(o)?)|(y(es)?)",
-                RegexOptions.Compiled | 
+                RegexOptions.Compiled |
                 RegexOptions.IgnoreCase
             );
-            
+
             do
             {
                 Console.Write(message);
