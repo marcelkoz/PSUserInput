@@ -4,7 +4,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Management.Automation;
 
-namespace PSUserInput
+namespace PSUserInput.Commands
 {
     using Containers;
 

@@ -2,7 +2,7 @@ using System;
 using System.Management.Automation;
 using System.Text.RegularExpressions;
 
-namespace PSUserInput
+namespace PSUserInput.Commands
 {
     [Cmdlet("Read", "BinaryInput")]
     [OutputType(typeof(bool))]

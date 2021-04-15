@@ -2,7 +2,7 @@
 using System.Management.Automation;
 using System.Text.RegularExpressions;
 
-namespace PSUserInput
+namespace PSUserInput.Commands
 {
     [Cmdlet("Read", "TextInput")]
     [OutputType(typeof(string))]
