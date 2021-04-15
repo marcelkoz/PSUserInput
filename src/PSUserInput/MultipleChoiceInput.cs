@@ -8,7 +8,7 @@ namespace PSUserInput.Commands
 {
     using Containers;
 
-    [Cmdlet("Read", "MultipleChoiceInput")]
+    [Cmdlet(VerbsCommunications.Read, "MultipleChoiceInput")]
     [OutputType(typeof(MultipleChoiceAnswer), typeof(MultipleChoiceAnswer[]))]
     public class GetMultipleChoiceInput : Cmdlet
     {
