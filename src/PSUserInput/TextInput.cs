@@ -6,7 +6,7 @@ namespace PSUserInput.Commands
 {
     [Cmdlet(VerbsCommunications.Read, "TextInput")]
     [OutputType(typeof(string))]
-    public class GetTextInput : Cmdlet
+    public class TextInput : Cmdlet
     {
         [Parameter(
             Mandatory = true,

@@ -6,7 +6,7 @@ namespace PSUserInput.Commands
 {
     [Cmdlet(VerbsCommunications.Read, "BinaryInput")]
     [OutputType(typeof(bool))]
-    public class GetBinaryInput : Cmdlet
+    public class BinaryInput : Cmdlet
     {
         [Parameter(
             Mandatory = true,

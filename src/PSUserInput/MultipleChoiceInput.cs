@@ -10,7 +10,7 @@ namespace PSUserInput.Commands
 
     [Cmdlet(VerbsCommunications.Read, "MultipleChoiceInput")]
     [OutputType(typeof(MultipleChoiceAnswer), typeof(MultipleChoiceAnswer[]))]
-    public class GetMultipleChoiceInput : Cmdlet
+    public class MultipleChoiceInput : Cmdlet
     {
         [Parameter(
             Mandatory = true,
