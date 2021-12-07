@@ -16,7 +16,6 @@ namespace PSUserInput.Commands
             Mandatory = true,
             Position = 0
         )]
-        [Alias("Question")]
         public string Message { get; set; }
 
         [Parameter(
