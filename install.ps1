@@ -23,9 +23,12 @@ function InstallModule($Location)
 }
 
 $ErrorActionPreference = 'Stop'
-try {
-    dotnet build
+try
+{
+    dotnet build --configuration Release
     Write-Output 'Installing module...'
+
+    $Location = $InstallDir
     # interactive install
     if ($InstallDir -eq "")
     {
@@ -34,15 +37,14 @@ try {
         $PotentialLocations = $env:PSModulePath.Split(';')
         $Location = Read-MultipleChoiceInput -Message 'Select ONE of the following module locations:' -Answers $PotentialLocations
         $Location = (Join-Path $Location.Answer $ModuleName)
-        InstallModule($Location)
+
+        Remove-Module -Name $ModuleName
     }
     # manual install
-    else
-    {
-        InstallModule($InstallDir)
-    }
-    
-} catch {
+    InstallModule($Location)  
+}
+catch
+{
     Write-Error "An error occured while installing module:`n$_"
     exit
 }
