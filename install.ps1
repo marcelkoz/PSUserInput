@@ -6,10 +6,11 @@
 param([string] $InstallDir)
 
 # module info globals
-$ModuleName = 'PSUserInput'
-$ModuleRoot = './Module'
-$ModuleDecl = "$ModuleRoot/$ModuleName.psd1"
-$ModuleDLL  = "$ModuleRoot/bin/$ModuleName.dll"
+$ModuleName    = 'PSUserInput'
+$ModuleRoot    = './Module'
+$ModuleDecl    = "$ModuleRoot/$ModuleName.psd1"
+$ModuleDLL     = "$ModuleRoot/bin/$ModuleName.dll"
+$ModuleLicense = './LICENSE.txt'
 
 # copies module files to specified location
 function InstallModule($Location)
@@ -19,7 +20,7 @@ function InstallModule($Location)
         New-Item -ItemType Directory $Location
     }
     Write-Output "Copying files to module location ($location)..."
-    Copy-Item -Path $ModuleDecl, $ModuleDLL -Destination $Location
+    Copy-Item -Path $ModuleDecl, $ModuleDLL, $ModuleLicense -Destination $Location
 }
 
 $ErrorActionPreference = 'Stop'
