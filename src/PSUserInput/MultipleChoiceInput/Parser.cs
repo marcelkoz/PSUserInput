@@ -5,6 +5,8 @@ using System.Collections.Generic;
 
 namespace PSUserInput.Parsers.MultipleChoice
 {
+    using Choices = List<int>;
+    
     enum TokenType
     {
         EOF = 0,
@@ -118,31 +120,37 @@ namespace PSUserInput.Parsers.MultipleChoice
 
     public class Parser
     {
-        private Scanner   m_scanner      { get; } = new Scanner();
-        private List<int>   m_numbers      { get; set; }
-        private List<Token> m_tokens       { get; set; }
-        private Token       m_currentToken { get; set; }
-        private int         m_position     { get; set; }
-        private bool        m_continue
+        private Scanner        m_scanner      { get; } = new Scanner();
+        private DecisionEngine m_engine       { get; set; }
+        private Choices        m_numbers      { get; set; }
+        private List<Token>    m_tokens       { get; set; }
+        private Token          m_currentToken { get; set; }
+        private int            m_position     { get; set; }
+        private bool           m_continue
         {
             get { return m_position + 1 < m_tokens.Count; }
         }
 
-        public (bool, List<int>) Parse(string input)
+        public Parser(string[] answers, string list, string duplicates)
         {
+            m_engine = new DecisionEngine(answers, list, duplicates);
+        }
+
+        public (bool, Choices) Parse(string input)
+        {
+            var invalidChoices = (false, new Choices());
+
+            // tokenising
             var (scanSuccess, tokens) = m_scanner.Tokenise(input);
+            if (!scanSuccess) return invalidChoices;
 
-            if (!scanSuccess) return (false, new List<int>());
-
+            // parsing
             _resetValues(tokens);
             var parseSuccess = _parse();
+            if (!parseSuccess) return invalidChoices;
 
-            return (
-                parseSuccess,
-                parseSuccess
-                    ? m_numbers
-                    : new List<int>()
-            );
+            // validation
+            return m_engine.ValidateChoices(m_numbers);
         }
 
         private void _resetValues(List<Token> tokens)

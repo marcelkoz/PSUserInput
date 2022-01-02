@@ -1,6 +1,5 @@
 using System;
 using System.Text;
-using System.Linq;
 using System.Collections.Generic;
 using System.Management.Automation;
 
@@ -8,8 +7,6 @@ namespace PSUserInput.Commands
 {
     using Containers;
     using Parsers.MultipleChoice;
-
-    using Choices = List<int>;
 
     [Cmdlet(VerbsCommunications.Read, "MultipleChoiceInput")]
     [OutputType(typeof(MultipleChoiceAnswer), typeof(MultipleChoiceAnswer[]))]
@@ -45,7 +42,7 @@ namespace PSUserInput.Commands
             base.ProcessRecord();
 
             var message      = _constructMessage(List == "Accept");
-            var parser       = new Parser();
+            var parser       = new Parser(Answers, List, Duplicates);
             var finalChoices = new List<int>();
             while (true)
             {
@@ -53,9 +50,6 @@ namespace PSUserInput.Commands
                 var input = Console.ReadLine();
 
                 var (success, choices) = parser.Parse(input);
-                if (!success) continue;
-
-                (success, choices) = _validateChoices(choices);
                 if (success)
                 {
                     finalChoices = choices;
@@ -87,108 +81,7 @@ namespace PSUserInput.Commands
             return builder.ToString();
         }
 
-        private (bool, Choices) _validateChoices(Choices choices)
-        {
-            #if DEBUG
-                for (var i = 0; i < choices.Count; i++)
-                {
-                    Console.WriteLine($"Choice {i + 1}: {choices[i]}");
-                }
-
-                Console.WriteLine($"List: {List}");
-                Console.WriteLine($"Duplicates: {Duplicates}");
-            #endif
-
-            if (List == "Deny")
-            {
-                if (choices.Count == 1 && _isWithinChoiceRange(choices[0]))
-                    return (true, choices);
-                else
-                    return (false, new Choices());
-            }
-
-            return _validateManyChoices(choices);
-        }
-
-        private (bool, Choices) _validateManyChoices(Choices choices)
-        {
-            var invalidChoices = (false, new Choices());
-            var sameChoices    = (true, choices);
-            var hasDuplicates  = _hasChoiceDuplicates(choices);
-
-            if (!_choicesAreWithinRange(choices))
-                return invalidChoices;
-
-            switch (Duplicates.ToLower())
-            {
-                case "accept":
-                    return sameChoices;
-
-                case "remove":
-                    return hasDuplicates
-                        ? (true, _getUniqueChoices(choices))
-                        : sameChoices;
-        
-                case "deny":
-                    return hasDuplicates
-                        ? invalidChoices
-                        : sameChoices;
-            }
-
-            // unreachable
-            return invalidChoices;
-        }
-
-        private bool _isWithinChoiceRange(int choice)
-        {
-            return choice > 0 && choice <= Answers.Length;
-        }
-
-        private bool _choicesAreWithinRange(Choices choices)
-        {
-            foreach (var choice in choices)
-            {
-                if (!_isWithinChoiceRange(choice)) return false;
-            }
-
-            return true;
-        }
-
-        private bool _hasChoiceDuplicates(Choices choices)
-        {
-            // clone list to preserve insertion order
-            var numbers = new List<int>(choices);
-            numbers.Sort();
-
-            var previous = -1;
-            foreach (var choice in numbers)
-            {
-                if (choice == previous)
-                    return true;
-
-                previous = choice;
-            }
-
-            return false;
-        }
-    
-        private Choices _getUniqueChoices(Choices choices)
-        {
-            var table = new Dictionary<int, int>();
-            var numbers = new List<int>();
-            foreach(var choice in choices)
-            {
-                if (!table.ContainsKey(choice))
-                {
-                    numbers.Add(choice);
-                    table.Add(choice, 1);
-                }
-            }
-
-            return numbers;
-        }
-    
-        private List<MultipleChoiceAnswer> _getAnswers(Choices choices)
+        private List<MultipleChoiceAnswer> _getAnswers(List<int> choices)
         {
             var answers = new List<MultipleChoiceAnswer>();
             foreach (var choice in choices)
