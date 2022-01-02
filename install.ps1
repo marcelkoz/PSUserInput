@@ -2,15 +2,20 @@
 # Install script for PSUserInput module.
 #
 
-# if set, the script copies module files to that location otherwise goes into interactive install
-param([string] $InstallDir)
+param(
+    # if set, the script copies module files to that location otherwise goes into interactive install
+    [string] $InstallDir,
+    # package the module instead in a zip file
+    [switch] $Package
+)
 
 # module info globals
-$ModuleName    = 'PSUserInput'
-$ModuleRoot    = './Module'
-$ModuleDecl    = "$ModuleRoot/$ModuleName.psd1"
-$ModuleDLL     = "$ModuleRoot/bin/$ModuleName.dll"
-$ModuleLicense = './LICENSE.txt'
+$ModuleName     = 'PSUserInput'
+$ModuleRoot     = './Module'
+$ModuleDecl     = "$ModuleRoot/$ModuleName.psd1"
+$ModuleDLL      = "$ModuleRoot/bin/$ModuleName.dll"
+$ModuleLicense  = './LICENSE.txt'
+$ModulePackages = "$ModuleRoot/Packages" 
 
 # copies module files to specified location
 function InstallModule($Location)
@@ -19,8 +24,19 @@ function InstallModule($Location)
     {
         New-Item -ItemType Directory $Location
     }
-    Write-Output "Copying files to module location ($location)..."
-    Copy-Item -Path $ModuleDecl, $ModuleDLL, $ModuleLicense -Destination $Location
+
+    $ModuleFiles = @($ModuleDecl, $ModuleDLL, $ModuleLicense)
+    if ($Package)
+    {
+        Write-Output "Packaging module to location ($location)..."
+        $Version = (Get-Module -ListAvailable $ModuleDecl).Version
+        Compress-Archive -Path $ModuleFiles -DestinationPath "$Location/$ModuleName-$Version.zip"
+    }
+    else
+    {
+        Write-Output "Copying files to module location ($location)..."
+        Copy-Item -Path $ModuleFiles -Destination $Location
+    }
 }
 
 $ErrorActionPreference = 'Stop'
@@ -30,8 +46,13 @@ try
     Write-Output 'Installing module...'
 
     $Location = $InstallDir
+    # package module
+    if ($Package)
+    {
+        $Location = $ModulePackages
+    }
     # interactive install
-    if ($InstallDir -eq "")
+    elseif ($InstallDir -eq "")
     {
         Import-Module -Name $ModuleDLL
 
@@ -46,8 +67,8 @@ try
 }
 catch
 {
-    Write-Error "An error occured while installing module:`n$_"
+    $_
     exit
 }
 
-Write-Output 'Installation of module was successful.'
+Write-Output 'Installation or packaging of module was successful.'
