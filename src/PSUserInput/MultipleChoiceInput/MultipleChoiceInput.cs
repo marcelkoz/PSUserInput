@@ -89,14 +89,15 @@ namespace PSUserInput.Commands
 
         private (bool, Choices) _validateChoices(Choices choices)
         {
-            foreach (var choice in choices)
-            {
-                Console.WriteLine($"Choice: ${choice}");
-            }
+            #if DEBUG
+                for (var i = 0; i < choices.Count; i++)
+                {
+                    Console.WriteLine($"Choice {i + 1}: {choices[i]}");
+                }
 
-            Console.WriteLine($"List: ${List}");
-            Console.WriteLine($"Duplicates: ${Duplicates}");
-
+                Console.WriteLine($"List: {List}");
+                Console.WriteLine($"Duplicates: {Duplicates}");
+            #endif
 
             if (List == "Deny")
             {

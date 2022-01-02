@@ -47,16 +47,16 @@ namespace PSUserInput.Parsers.MultipleChoice
 
         private void _nextChar()
         {
-            Console.WriteLine("NextChar: ({0}, {1}, {2})", m_position, m_position + 1, m_input.Length);
+            #if DEBUG
+                Console.WriteLine("NextChar: (Pos:{0} Next:{1} Len:{2})", m_position, m_position + 1, m_input.Length);
+            #endif
             if (m_continue)
             {
-                Console.WriteLine("NextChar success.");
                 m_position++;
                 m_currentChar = m_input[m_position];
             }
             else
             {
-                Console.WriteLine("NextChar failure.");
                 m_currentChar = 'E';
             }
         }
@@ -70,12 +70,9 @@ namespace PSUserInput.Parsers.MultipleChoice
 
         private bool _tokenise()
         {
-            Console.WriteLine("Tokenising loop.");
             while (m_continue)
             {
                 _nextChar();
-                Console.WriteLine("Next char.");
-
 
                 // ignore whitespace                
                 if (Char.IsWhiteSpace(m_currentChar)) {}
@@ -158,16 +155,16 @@ namespace PSUserInput.Parsers.MultipleChoice
 
         private Token _nextToken()
         {
-            Console.WriteLine("NextToken: ({0}, {1}, {2})", m_position, m_position + 1, m_tokens.Count);
+            #if DEBUG
+                Console.WriteLine("NextToken: (Pos:{0} Next:{1} Len:{2})", m_position, m_position + 1, m_tokens.Count);
+            #endif
             if (m_continue)
             {
-                Console.WriteLine("NextToken success.");
                 m_position++;
                 m_currentToken = m_tokens[m_position];
             }
             else
             {
-                Console.WriteLine("NextToken failure.");
                 m_currentToken = new Token { Type=TokenType.EOF, Value="" };
             }
 
@@ -193,7 +190,9 @@ namespace PSUserInput.Parsers.MultipleChoice
                 }
                 catch (ParserStop)
                 {
-                    Console.WriteLine("Parser stop!!!");
+                    #if DEBUG
+                        Console.WriteLine("Parser stop exception.");
+                    #endif
                     return false;
                 }
             }
@@ -232,7 +231,7 @@ namespace PSUserInput.Parsers.MultipleChoice
         private void _parseRange()
         {
             var start = _takeNumber(m_currentToken);
-            // dash
+            // separator
             _nextToken();
             var end = _takeNumber(_nextToken());
             
