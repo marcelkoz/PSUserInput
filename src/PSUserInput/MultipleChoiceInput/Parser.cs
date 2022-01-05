@@ -7,7 +7,7 @@ namespace PSUserInput.Parsers.MultipleChoice
 {
     using Choices = List<int>;
     
-    enum TokenType
+    public enum TokenType
     {
         EOF = 0,
         // unsigned integer
@@ -16,13 +16,19 @@ namespace PSUserInput.Parsers.MultipleChoice
         RangeSeparator
     }
 
-    class Token
+    public class Token
     {
         public TokenType Type;
         public string    Value;
+
+        public Token(TokenType type, string value)
+        {
+            Type  = type;
+            Value = value;
+        }
     }
 
-    class Scanner
+    public class Scanner
     {
         private List<Token> m_tokens      { get; set; }
         private string      m_input       { get; set; }
@@ -80,11 +86,11 @@ namespace PSUserInput.Parsers.MultipleChoice
                 if (Char.IsWhiteSpace(m_currentChar)) {}
                 else if (_isNumeric(m_currentChar)) _tokeniseNumber();
                 else if ("-:".Contains(m_currentChar))
-                    m_tokens.Add(new Token { Type=TokenType.RangeSeparator, Value=m_currentChar.ToString() });
+                    m_tokens.Add(new Token(TokenType.RangeSeparator, m_currentChar.ToString()));
                 else return false;
             }
 
-            m_tokens.Add(new Token { Type=TokenType.EOF, Value="" });
+            m_tokens.Add(new Token(TokenType.EOF, ""));
             return true;
         }
 
@@ -105,18 +111,13 @@ namespace PSUserInput.Parsers.MultipleChoice
                 number.Append(m_currentChar);
             }
 
-            var str = number.ToString();
             m_tokens.Add(
-                new Token
-                {
-                    Type  = TokenType.Number,
-                    Value = str
-                }
+                new Token(TokenType.Number, number.ToString())
             );
         }
     }
 
-    class ParserStop : Exception {}
+    public class ParserStop : Exception {}
 
     public class Parser
     {
@@ -157,7 +158,7 @@ namespace PSUserInput.Parsers.MultipleChoice
         {
             m_tokens       = tokens;
             m_position     = -1;
-            m_currentToken = new Token { Type=TokenType.EOF, Value="" }; 
+            m_currentToken = new Token(TokenType.EOF, ""); 
             m_numbers      = new List<int>();
         }
 
@@ -173,7 +174,7 @@ namespace PSUserInput.Parsers.MultipleChoice
             }
             else
             {
-                m_currentToken = new Token { Type=TokenType.EOF, Value="" };
+                m_currentToken = new Token(TokenType.EOF, "");
             }
 
             return m_currentToken;
@@ -183,7 +184,7 @@ namespace PSUserInput.Parsers.MultipleChoice
         {
             return m_continue
                 ? m_tokens[m_position + 1]
-                : new Token { Type=TokenType.EOF, Value="" };
+                : new Token(TokenType.EOF, "");
         }
 
         private bool _parse()
