@@ -42,7 +42,10 @@ namespace PSUserInput.Parsers.MultipleChoice
         public (bool, List<Token>) Tokenise(string input)
         {
             _resetValues(input);
-            return (_tokenise(), m_tokens);
+            var result = _tokenise();
+            return (result, result
+                ? m_tokens
+                : new List<Token>());
         }
 
         private void _resetValues(string input)
