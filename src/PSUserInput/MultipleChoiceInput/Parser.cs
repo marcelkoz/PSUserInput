@@ -7,6 +7,54 @@ namespace PSUserInput.Parsers.MultipleChoice
 {
     using Choices = List<int>;
 
+    class ForwardStream<T>
+    {
+        private IList<T> m_elements { get; init; }
+        private T m_currentElement { get; set; }
+        private int m_position { get; set; }
+
+        public T Default { get; init; }
+        public T CurrentElement { get { return m_currentElement; } }
+        public bool Continue
+        {
+            get { return m_position + 1 < m_elements.Count; }
+        }
+
+        public ForwardStream(IList<T> elements, T defaultValue)
+        {
+            m_elements = elements;
+            m_position = -1;
+            Default = defaultValue;
+            m_currentElement = Default;
+        }
+
+        public T Next()
+        {
+#if DEBUG
+            Console.WriteLine("Next Element: (Pos:{0} Next:{1} Len:{2})", m_position, m_position + 1, m_elements.Count);
+#endif
+
+            if (Continue)
+            {
+                m_position++;
+                m_currentElement = m_elements[m_position];
+            }
+            else
+            {
+                m_currentElement = Default;
+            }
+
+            return CurrentElement;
+        }
+
+        public T Peek()
+        {
+            return Continue
+                ? m_elements[m_position + 1]
+                : Default;
+        }
+    }
+
     public enum TokenType
     {
         EOF = 0,
@@ -20,15 +68,8 @@ namespace PSUserInput.Parsers.MultipleChoice
 
     public class Scanner
     {
-        private static char EmptyChar = 'E';
         private List<Token> m_tokens { get; set; }
-        private string m_input { get; set; }
-        private char m_currentChar { get; set; }
-        private int m_position { get; set; }
-        private bool m_continue
-        {
-            get { return m_position + 1 < m_input.Length; }
-        }
+        private ForwardStream<char> m_input { get; set; }
 
         public (bool, List<Token>) Tokenise(string input)
         {
@@ -41,47 +82,20 @@ namespace PSUserInput.Parsers.MultipleChoice
 
         private void _resetValues(string input)
         {
-            m_input = input;
-            m_currentChar = EmptyChar;
-            m_position = -1;
+            m_input = new ForwardStream<char>(input.ToCharArray(), 'E');
             m_tokens = new List<Token>();
-        }
-
-        private void _nextChar()
-        {
-#if DEBUG
-            Console.WriteLine("NextChar: (Pos:{0} Next:{1} Len:{2})", m_position, m_position + 1, m_input.Length);
-#endif
-
-            if (m_continue)
-            {
-                m_position++;
-                m_currentChar = m_input[m_position];
-            }
-            else
-            {
-                m_currentChar = EmptyChar;
-            }
-        }
-
-        private char _peekChar()
-        {
-            return m_continue
-                ? m_input[m_position + 1]
-                : EmptyChar;
         }
 
         private bool _tokenise()
         {
-            while (m_continue)
+            while (m_input.Continue)
             {
-                _nextChar();
+                m_input.Next();
 
-                // ignore whitespace                
-                if (Char.IsWhiteSpace(m_currentChar)) { }
-                else if (_isNumeric(m_currentChar)) _tokeniseNumber();
-                else if ("-:".Contains(m_currentChar))
-                    m_tokens.Add(new Token(TokenType.RangeSeparator, m_currentChar.ToString()));
+                if (Char.IsWhiteSpace(m_input.CurrentElement)) { }
+                else if (_isNumeric(m_input.CurrentElement)) _tokeniseNumber();
+                else if ("-:".Contains(m_input.CurrentElement))
+                    m_tokens.Add(new Token(TokenType.RangeSeparator, m_input.CurrentElement.ToString()));
                 else return false;
             }
 
@@ -98,12 +112,12 @@ namespace PSUserInput.Parsers.MultipleChoice
         {
             var number = new StringBuilder();
 
-            number.Append(m_currentChar);
+            number.Append(m_input.CurrentElement);
             // construct number
-            while (_isNumeric(_peekChar()))
+            while (_isNumeric(m_input.Peek()))
             {
-                _nextChar();
-                number.Append(m_currentChar);
+                m_input.Next();
+                number.Append(m_input.CurrentElement);
             }
 
             m_tokens.Add(
@@ -112,24 +126,18 @@ namespace PSUserInput.Parsers.MultipleChoice
         }
     }
 
-    public class ParserStop : Exception { }
+    class ParserStop : Exception { }
 
     public class Parser
     {
-        private static Token EmptyToken = new Token(TokenType.EOF, "");
-        private Scanner m_scanner { get; init; } = new Scanner();
+        private Scanner m_scanner { get; init; }
         private DecisionEngine m_engine { get; init; }
         private Choices m_numbers { get; set; }
-        private List<Token> m_tokens { get; set; }
-        private Token m_currentToken { get; set; }
-        private int m_position { get; set; }
-        private bool m_continue
-        {
-            get { return m_position + 1 < m_tokens.Count; }
-        }
+        private ForwardStream<Token> m_tokens { get; set; }
 
         public Parser(string[] answers, string list, string duplicates)
         {
+            m_scanner = new Scanner();
             m_engine = new DecisionEngine(answers, list, duplicates);
         }
 
@@ -152,43 +160,18 @@ namespace PSUserInput.Parsers.MultipleChoice
 
         private void _resetValues(List<Token> tokens)
         {
-            m_tokens = tokens;
-            m_position = -1;
-            m_currentToken = EmptyToken;
+            m_tokens = new ForwardStream<Token>(
+                tokens,
+                new Token(TokenType.EOF, "")
+            );
             m_numbers = new List<int>();
-        }
-
-        private Token _nextToken()
-        {
-#if DEBUG
-            Console.WriteLine("NextToken: (Pos:{0} Next:{1} Len:{2})", m_position, m_position + 1, m_tokens.Count);
-#endif
-
-            if (m_continue)
-            {
-                m_position++;
-                m_currentToken = m_tokens[m_position];
-            }
-            else
-            {
-                m_currentToken = EmptyToken;
-            }
-
-            return m_currentToken;
-        }
-
-        private Token _peekToken()
-        {
-            return m_continue
-                ? m_tokens[m_position + 1]
-                : EmptyToken;
         }
 
         private bool _parse()
         {
-            while (m_continue)
+            while (m_tokens.Continue)
             {
-                _nextToken();
+                m_tokens.Next();
 
                 try
                 {
@@ -208,7 +191,7 @@ namespace PSUserInput.Parsers.MultipleChoice
 
         private void _parseToken()
         {
-            switch (m_currentToken.Type)
+            switch (m_tokens.CurrentElement.Type)
             {
                 case TokenType.Number:
                     _parseNumber();
@@ -225,21 +208,21 @@ namespace PSUserInput.Parsers.MultipleChoice
 
         private void _parseNumber()
         {
-            if (_peekToken().Type == TokenType.RangeSeparator)
+            if (m_tokens.Peek().Type == TokenType.RangeSeparator)
             {
                 _parseRange();
                 return;
             }
 
-            m_numbers.Add(_takeNumber(m_currentToken));
+            m_numbers.Add(_takeNumber(m_tokens.CurrentElement));
         }
 
         private void _parseRange()
         {
-            var start = _takeNumber(m_currentToken);
+            var start = _takeNumber(m_tokens.CurrentElement);
             // separator
-            _nextToken();
-            var end = _takeNumber(_nextToken());
+            m_tokens.Next();
+            var end = _takeNumber(m_tokens.Next());
 
             if (start < end)
             {

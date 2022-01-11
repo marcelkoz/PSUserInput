@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace PSUserInput.Parsers.MultipleChoice
 {
     using Choices = List<int>;
-    
+
     public class DecisionEngine
     {
         private string m_list { get; init; }
