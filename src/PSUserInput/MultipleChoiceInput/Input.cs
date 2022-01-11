@@ -41,7 +41,8 @@ namespace PSUserInput.Commands
         {
             base.ProcessRecord();
 
-            var message = _constructMessage(List == "Accept");
+            var acceptList = List.ToLower() == "accept";
+            var message = _constructMessage(acceptList);
             var parser = new Parser(Answers, List, Duplicates);
             var finalChoices = new List<int>();
             while (true)
@@ -58,7 +59,7 @@ namespace PSUserInput.Commands
             }
 
             var answers = _getAnswers(finalChoices);
-            if (List == "Accept")
+            if (acceptList)
                 WriteObject(answers);
             else
                 WriteObject(answers[0]);

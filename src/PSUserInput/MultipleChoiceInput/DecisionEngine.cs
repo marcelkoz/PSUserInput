@@ -3,21 +3,19 @@ using System.Collections.Generic;
 
 namespace PSUserInput.Parsers.MultipleChoice
 {
-    using Containers;
-
     using Choices = List<int>;
-
+    
     public class DecisionEngine
     {
-        private string m_list { get; set; }
-        private string m_duplicates { get; set; }
+        private string m_list { get; init; }
+        private string m_duplicates { get; init; }
         private String[] m_answers { get; set; }
 
         public DecisionEngine(String[] answers, string list, string duplicates)
         {
             m_answers = answers;
-            m_list = list;
-            m_duplicates = duplicates;
+            m_list = list.ToLower();
+            m_duplicates = duplicates.ToLower();
         }
 
         public (bool, Choices) ValidateChoices(Choices choices)
@@ -32,7 +30,7 @@ namespace PSUserInput.Parsers.MultipleChoice
             Console.WriteLine($"Duplicates: {m_duplicates}");
 #endif
 
-            if (m_list == "Deny")
+            if (m_list == "deny")
             {
                 if (choices.Count == 1 && _isWithinChoiceRange(choices[0]))
                     return (true, choices);
@@ -52,7 +50,7 @@ namespace PSUserInput.Parsers.MultipleChoice
             if (!_choicesAreWithinRange(choices))
                 return invalidChoices;
 
-            switch (m_duplicates.ToLower())
+            switch (m_duplicates)
             {
                 case "accept":
                     return sameChoices;
