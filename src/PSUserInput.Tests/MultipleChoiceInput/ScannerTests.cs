@@ -1,18 +1,18 @@
-using Xunit;
 using System;
 using System.Collections.Generic;
 using PSUserInput.Parsers.MultipleChoice;
+using Xunit;
 
 namespace PSUserInput.Tests;
 
 public class TestDataPair
 {
-    public string      Input  { get; set; } = "";
+    public string Input { get; set; } = "";
     public List<Token> Tokens { get; set; } = new List<Token>();
 
     public TestDataPair(string input, List<Token> tokens)
     {
-        Input  = input;
+        Input = input;
         Tokens = tokens;
     }
 }
@@ -111,9 +111,9 @@ public class ScannerTests
     [MemberData(nameof(InvalidInput))]
     public void Tokenise_GarbageInput_ReturnsInvalidPair(string input)
     {
-        var scanner     = new Scanner();
+        var scanner = new Scanner();
         var invalidData = (false, new List<Token>());
-        var result      = scanner.Tokenise(input);
+        var result = scanner.Tokenise(input);
 
         Assert.True(result.Item1 == invalidData.Item1);
         Assert.True(result.Item2.Count == invalidData.Item2.Count);

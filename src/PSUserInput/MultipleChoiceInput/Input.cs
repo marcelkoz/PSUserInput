@@ -1,7 +1,7 @@
 using System;
-using System.Text;
 using System.Collections.Generic;
 using System.Management.Automation;
+using System.Text;
 
 namespace PSUserInput.Commands
 {
@@ -41,8 +41,8 @@ namespace PSUserInput.Commands
         {
             base.ProcessRecord();
 
-            var message      = _constructMessage(List == "Accept");
-            var parser       = new Parser(Answers, List, Duplicates);
+            var message = _constructMessage(List == "Accept");
+            var parser = new Parser(Answers, List, Duplicates);
             var finalChoices = new List<int>();
             while (true)
             {
@@ -91,8 +91,8 @@ namespace PSUserInput.Commands
                     new MultipleChoiceAnswer
                     {
                         Position = index + 1,
-                        Index    = index,
-                        Answer   = Answers[index]
+                        Index = index,
+                        Answer = Answers[index]
                     }
                 );
             }

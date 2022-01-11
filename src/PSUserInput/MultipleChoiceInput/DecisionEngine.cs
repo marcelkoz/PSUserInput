@@ -9,29 +9,29 @@ namespace PSUserInput.Parsers.MultipleChoice
 
     public class DecisionEngine
     {
-        private string   m_list       { get; set; }
-        private string   m_duplicates { get; set; }
-        private String[] m_answers    { get; set; }
+        private string m_list { get; set; }
+        private string m_duplicates { get; set; }
+        private String[] m_answers { get; set; }
 
         public DecisionEngine(String[] answers, string list, string duplicates)
         {
-            m_answers    = answers;
-            m_list       = list;
+            m_answers = answers;
+            m_list = list;
             m_duplicates = duplicates;
         }
 
         public (bool, Choices) ValidateChoices(Choices choices)
         {
-            #if DEBUG
-                for (var i = 0; i < choices.Count; i++)
-                {
-                    Console.WriteLine($"Choice {i + 1}: {choices[i]}");
-                }
+#if DEBUG
+            for (var i = 0; i < choices.Count; i++)
+            {
+                Console.WriteLine($"Choice {i + 1}: {choices[i]}");
+            }
 
-                Console.WriteLine($"List: {m_list}");
-                Console.WriteLine($"Duplicates: {m_duplicates}");
-            #endif
-        
+            Console.WriteLine($"List: {m_list}");
+            Console.WriteLine($"Duplicates: {m_duplicates}");
+#endif
+
             if (m_list == "Deny")
             {
                 if (choices.Count == 1 && _isWithinChoiceRange(choices[0]))
@@ -46,8 +46,8 @@ namespace PSUserInput.Parsers.MultipleChoice
         private (bool, Choices) _validateManyChoices(Choices choices)
         {
             var invalidChoices = (false, new Choices());
-            var sameChoices    = (true, choices);
-            var hasDuplicates  = _hasChoiceDuplicates(choices);
+            var sameChoices = (true, choices);
+            var hasDuplicates = _hasChoiceDuplicates(choices);
 
             if (!_choicesAreWithinRange(choices))
                 return invalidChoices;
@@ -61,7 +61,7 @@ namespace PSUserInput.Parsers.MultipleChoice
                     return hasDuplicates
                         ? (true, _getUniqueChoices(choices))
                         : sameChoices;
-        
+
                 case "deny":
                     return hasDuplicates
                         ? invalidChoices
@@ -104,12 +104,12 @@ namespace PSUserInput.Parsers.MultipleChoice
 
             return false;
         }
-    
+
         private Choices _getUniqueChoices(Choices choices)
         {
             var table = new Dictionary<int, int>();
             var numbers = new List<int>();
-            foreach(var choice in choices)
+            foreach (var choice in choices)
             {
                 if (!table.ContainsKey(choice))
                 {
