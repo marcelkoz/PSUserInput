@@ -16,17 +16,7 @@ namespace PSUserInput.Parsers.MultipleChoice
         RangeSeparator
     }
 
-    public class Token
-    {
-        public TokenType Type;
-        public string Value;
-
-        public Token(TokenType type, string value)
-        {
-            Type = type;
-            Value = value;
-        }
-    }
+    public record Token(TokenType Type, string Value);
 
     public class Scanner
     {
@@ -62,6 +52,7 @@ namespace PSUserInput.Parsers.MultipleChoice
 #if DEBUG
             Console.WriteLine("NextChar: (Pos:{0} Next:{1} Len:{2})", m_position, m_position + 1, m_input.Length);
 #endif
+
             if (m_continue)
             {
                 m_position++;
@@ -126,8 +117,8 @@ namespace PSUserInput.Parsers.MultipleChoice
     public class Parser
     {
         private static Token EmptyToken = new Token(TokenType.EOF, "");
-        private Scanner m_scanner { get; } = new Scanner();
-        private DecisionEngine m_engine { get; set; }
+        private Scanner m_scanner { get; init; } = new Scanner();
+        private DecisionEngine m_engine { get; init; }
         private Choices m_numbers { get; set; }
         private List<Token> m_tokens { get; set; }
         private Token m_currentToken { get; set; }
@@ -263,9 +254,7 @@ namespace PSUserInput.Parsers.MultipleChoice
         private int _takeNumber(Token token)
         {
             if (token.Type != TokenType.Number) throw new ParserStop();
-
-            int number;
-            if (Int32.TryParse(token.Value, out number)) return number;
+            if (Int32.TryParse(token.Value, out int number)) return number;
             else throw new ParserStop();
         }
     }
