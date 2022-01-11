@@ -30,6 +30,7 @@ namespace PSUserInput.Parsers.MultipleChoice
 
     public class Scanner
     {
+        private static char EmptyChar = 'E';
         private List<Token> m_tokens { get; set; }
         private string m_input { get; set; }
         private char m_currentChar { get; set; }
@@ -51,7 +52,7 @@ namespace PSUserInput.Parsers.MultipleChoice
         private void _resetValues(string input)
         {
             m_input = input;
-            m_currentChar = 'E';
+            m_currentChar = EmptyChar;
             m_position = -1;
             m_tokens = new List<Token>();
         }
@@ -68,7 +69,7 @@ namespace PSUserInput.Parsers.MultipleChoice
             }
             else
             {
-                m_currentChar = 'E';
+                m_currentChar = EmptyChar;
             }
         }
 
@@ -76,7 +77,7 @@ namespace PSUserInput.Parsers.MultipleChoice
         {
             return m_continue
                 ? m_input[m_position + 1]
-                : 'E';
+                : EmptyChar;
         }
 
         private bool _tokenise()
@@ -124,6 +125,7 @@ namespace PSUserInput.Parsers.MultipleChoice
 
     public class Parser
     {
+        private static Token EmptyToken = new Token(TokenType.EOF, "");
         private Scanner m_scanner { get; } = new Scanner();
         private DecisionEngine m_engine { get; set; }
         private Choices m_numbers { get; set; }
@@ -161,7 +163,7 @@ namespace PSUserInput.Parsers.MultipleChoice
         {
             m_tokens = tokens;
             m_position = -1;
-            m_currentToken = new Token(TokenType.EOF, "");
+            m_currentToken = EmptyToken;
             m_numbers = new List<int>();
         }
 
@@ -178,7 +180,7 @@ namespace PSUserInput.Parsers.MultipleChoice
             }
             else
             {
-                m_currentToken = new Token(TokenType.EOF, "");
+                m_currentToken = EmptyToken;
             }
 
             return m_currentToken;
@@ -188,7 +190,7 @@ namespace PSUserInput.Parsers.MultipleChoice
         {
             return m_continue
                 ? m_tokens[m_position + 1]
-                : new Token(TokenType.EOF, "");
+                : EmptyToken;
         }
 
         private bool _parse()
