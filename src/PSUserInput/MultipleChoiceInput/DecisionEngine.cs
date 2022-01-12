@@ -1,122 +1,121 @@
 using System;
 using System.Collections.Generic;
 
-namespace PSUserInput.Parsers.MultipleChoice
+namespace PSUserInput.Parsers.MultipleChoice;
+
+using Choices = List<int>;
+
+public class DecisionEngine
 {
-    using Choices = List<int>;
+    private string m_list { get; init; }
+    private string m_duplicates { get; init; }
+    private String[] m_answers { get; set; }
 
-    public class DecisionEngine
+    public DecisionEngine(String[] answers, string list, string duplicates)
     {
-        private string m_list { get; init; }
-        private string m_duplicates { get; init; }
-        private String[] m_answers { get; set; }
+        m_answers = answers;
+        m_list = list.ToLower();
+        m_duplicates = duplicates.ToLower();
+    }
 
-        public DecisionEngine(String[] answers, string list, string duplicates)
+    public (bool, Choices) ValidateChoices(Choices choices)
+    {
+#if DEBUG
+        for (var i = 0; i < choices.Count; i++)
         {
-            m_answers = answers;
-            m_list = list.ToLower();
-            m_duplicates = duplicates.ToLower();
+            Console.WriteLine($"Choice {i + 1}: {choices[i]}");
         }
 
-        public (bool, Choices) ValidateChoices(Choices choices)
-        {
-#if DEBUG
-            for (var i = 0; i < choices.Count; i++)
-            {
-                Console.WriteLine($"Choice {i + 1}: {choices[i]}");
-            }
-
-            Console.WriteLine($"List: {m_list}");
-            Console.WriteLine($"Duplicates: {m_duplicates}");
+        Console.WriteLine($"List: {m_list}");
+        Console.WriteLine($"Duplicates: {m_duplicates}");
 #endif
 
-            if (m_list == "deny")
-            {
-                if (choices.Count == 1 && _isWithinChoiceRange(choices[0]))
-                    return (true, choices);
-                else
-                    return (false, new Choices());
-            }
-
-            return _validateManyChoices(choices);
+        if (m_list == "deny")
+        {
+            if (choices.Count == 1 && _isWithinChoiceRange(choices[0]))
+                return (true, choices);
+            else
+                return (false, new Choices());
         }
 
-        private (bool, Choices) _validateManyChoices(Choices choices)
-        {
-            var invalidChoices = (false, new Choices());
-            var sameChoices = (true, choices);
-            var hasDuplicates = _hasChoiceDuplicates(choices);
+        return _validateManyChoices(choices);
+    }
 
-            if (!_choicesAreWithinRange(choices))
-                return invalidChoices;
+    private (bool, Choices) _validateManyChoices(Choices choices)
+    {
+        var invalidChoices = (false, new Choices());
+        var sameChoices = (true, choices);
+        var hasDuplicates = _hasChoiceDuplicates(choices);
 
-            switch (m_duplicates)
-            {
-                case "accept":
-                    return sameChoices;
-
-                case "remove":
-                    return hasDuplicates
-                        ? (true, _getUniqueChoices(choices))
-                        : sameChoices;
-
-                case "deny":
-                    return hasDuplicates
-                        ? invalidChoices
-                        : sameChoices;
-            }
-
-            // unreachable
+        if (!_choicesAreWithinRange(choices))
             return invalidChoices;
+
+        switch (m_duplicates)
+        {
+            case "accept":
+                return sameChoices;
+
+            case "remove":
+                return hasDuplicates
+                    ? (true, _getUniqueChoices(choices))
+                    : sameChoices;
+
+            case "deny":
+                return hasDuplicates
+                    ? invalidChoices
+                    : sameChoices;
         }
 
-        private bool _isWithinChoiceRange(int choice)
+        // unreachable
+        return invalidChoices;
+    }
+
+    private bool _isWithinChoiceRange(int choice)
+    {
+        return choice > 0 && choice <= m_answers.Length;
+    }
+
+    private bool _choicesAreWithinRange(Choices choices)
+    {
+        foreach (var choice in choices)
         {
-            return choice > 0 && choice <= m_answers.Length;
+            if (!_isWithinChoiceRange(choice)) return false;
         }
 
-        private bool _choicesAreWithinRange(Choices choices)
+        return true;
+    }
+
+    private bool _hasChoiceDuplicates(Choices choices)
+    {
+        // clone list to preserve insertion order
+        var numbers = new List<int>(choices);
+        numbers.Sort();
+
+        var previous = -1;
+        foreach (var choice in numbers)
         {
-            foreach (var choice in choices)
+            if (choice == previous)
+                return true;
+
+            previous = choice;
+        }
+
+        return false;
+    }
+
+    private Choices _getUniqueChoices(Choices choices)
+    {
+        var table = new Dictionary<int, int>();
+        var numbers = new List<int>();
+        foreach (var choice in choices)
+        {
+            if (!table.ContainsKey(choice))
             {
-                if (!_isWithinChoiceRange(choice)) return false;
+                numbers.Add(choice);
+                table.Add(choice, 1);
             }
-
-            return true;
         }
 
-        private bool _hasChoiceDuplicates(Choices choices)
-        {
-            // clone list to preserve insertion order
-            var numbers = new List<int>(choices);
-            numbers.Sort();
-
-            var previous = -1;
-            foreach (var choice in numbers)
-            {
-                if (choice == previous)
-                    return true;
-
-                previous = choice;
-            }
-
-            return false;
-        }
-
-        private Choices _getUniqueChoices(Choices choices)
-        {
-            var table = new Dictionary<int, int>();
-            var numbers = new List<int>();
-            foreach (var choice in choices)
-            {
-                if (!table.ContainsKey(choice))
-                {
-                    numbers.Add(choice);
-                    table.Add(choice, 1);
-                }
-            }
-
-            return numbers;
-        }
+        return numbers;
     }
 }
