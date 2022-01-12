@@ -146,15 +146,24 @@ namespace PSUserInput.Parsers.MultipleChoice
             var invalidChoices = (false, new Choices());
 
             // tokenising
+#if DEBUG
+            Console.WriteLine("===== Tokenising =====");
+#endif
             var (scanSuccess, tokens) = m_scanner.Tokenise(input);
             if (!scanSuccess) return invalidChoices;
 
             // parsing
+#if DEBUG
+            Console.WriteLine("===== Parsing =====");
+#endif
             _resetValues(tokens);
             var parseSuccess = _parse();
             if (!parseSuccess) return invalidChoices;
 
             // validation
+#if DEBUG
+            Console.WriteLine("===== Validation =====");
+#endif
             return m_engine.ValidateChoices(m_numbers);
         }
 
