@@ -94,7 +94,7 @@ public class Scanner
 
             if (Char.IsWhiteSpace(m_input.CurrentElement)) { }
             else if (_isNumeric(m_input.CurrentElement)) _tokeniseNumber();
-            else if ("-:".Contains(m_input.CurrentElement))
+            else if (_isRangeSeparator(m_input.CurrentElement))
                 m_tokens.Add(new Token(TokenType.RangeSeparator, m_input.CurrentElement.ToString()));
             else return false;
         }
@@ -106,6 +106,11 @@ public class Scanner
     private bool _isNumeric(char ch)
     {
         return "0123456789".Contains(ch);
+    }
+
+    private bool _isRangeSeparator(char ch)
+    {
+        return ":-".Contains(ch);
     }
 
     private void _tokeniseNumber()
@@ -169,10 +174,7 @@ public class Parser
 
     private void _resetValues(List<Token> tokens)
     {
-        m_tokens = new ForwardStream<Token>(
-            tokens,
-            new Token(TokenType.EOF, "")
-        );
+        m_tokens = new ForwardStream<Token>(tokens, new Token(TokenType.EOF, ""));
         m_numbers = new List<int>();
     }
 
@@ -233,20 +235,20 @@ public class Parser
         m_tokens.Next();
         var end = _takeNumber(m_tokens.Next());
 
-        if (start < end)
+        if (start > end)
+            throw new ParserStop();
+
+        for (int i = start; i <= end; i++)
         {
-            for (int i = start; i <= end; i++)
-            {
-                m_numbers.Add(i);
-            }
+            m_numbers.Add(i);
         }
-        else throw new ParserStop();
     }
 
     private int _takeNumber(Token token)
     {
-        if (token.Type != TokenType.Number) throw new ParserStop();
-        if (Int32.TryParse(token.Value, out int number)) return number;
-        else throw new ParserStop();
+        if (token.Type == TokenType.Number && Int32.TryParse(token.Value, out int number))
+            return number;
+
+        throw new ParserStop();
     }
 }
