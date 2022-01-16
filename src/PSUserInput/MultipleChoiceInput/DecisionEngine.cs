@@ -7,6 +7,8 @@ using Choices = List<int>;
 
 public class DecisionEngine
 {
+    private static (bool, Choices) InvalidPair = (false, new Choices());
+
     private string m_list { get; init; }
     private string m_duplicates { get; init; }
     private String[] m_answers { get; set; }
@@ -30,12 +32,15 @@ public class DecisionEngine
         Console.WriteLine($"Duplicates: {m_duplicates}");
 #endif
 
+        if (choices.Count == 0)
+            return InvalidPair;
+
         if (m_list == "deny")
         {
             if (choices.Count == 1 && _isWithinChoiceRange(choices[0]))
                 return (true, choices);
             else
-                return (false, new Choices());
+                return InvalidPair;
         }
 
         return _validateManyChoices(choices);
@@ -43,12 +48,11 @@ public class DecisionEngine
 
     private (bool, Choices) _validateManyChoices(Choices choices)
     {
-        var invalidChoices = (false, new Choices());
         var sameChoices = (true, choices);
         var hasDuplicates = _hasChoiceDuplicates(choices);
 
         if (!_choicesAreWithinRange(choices))
-            return invalidChoices;
+            return InvalidPair;
 
         switch (m_duplicates)
         {
@@ -62,12 +66,12 @@ public class DecisionEngine
 
             case "deny":
                 return hasDuplicates
-                    ? invalidChoices
+                    ? InvalidPair
                     : sameChoices;
         }
 
         // unreachable
-        return invalidChoices;
+        return InvalidPair;
     }
 
     private bool _isWithinChoiceRange(int choice)
