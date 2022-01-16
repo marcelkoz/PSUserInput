@@ -10,9 +10,9 @@ public class DecisionEngineTests
     [Fact]
     public void ValidateChoices_AcceptSingleInput_ReturnsCorrectPair()
     {
-        var engine = new DecisionEngine(new string [] {"test", "test", "test"}, "deny", "deny");
+        var engine = new DecisionEngine(new string[] { "test", "test", "test" }, "deny", "deny");
 
-        var result = engine.ValidateChoices(new List<int> {2});
+        var result = engine.ValidateChoices(new List<int> { 2 });
         Assert.True(result.Item1);
         Assert.True(result.Item2.Count == 1);
     }
@@ -20,9 +20,9 @@ public class DecisionEngineTests
     [Fact]
     public void ValidateChoices_AcceptListInput_ReturnsCorrectPair()
     {
-        var engine = new DecisionEngine(new string [] {"test", "test", "test"}, "accept", "deny");
+        var engine = new DecisionEngine(new string[] { "test", "test", "test" }, "accept", "deny");
 
-        var result = engine.ValidateChoices(new List<int> {1, 3, 2});
+        var result = engine.ValidateChoices(new List<int> { 1, 3, 2 });
         Assert.True(result.Item1);
         Assert.True(result.Item2.Count == 3);
     }
@@ -30,9 +30,9 @@ public class DecisionEngineTests
     [Fact]
     public void ValidateChoices_AcceptDuplicateInput_ReturnsCorrectPair()
     {
-        var engine = new DecisionEngine(new string [] {"test", "test", "test"}, "accept", "accept");
+        var engine = new DecisionEngine(new string[] { "test", "test", "test" }, "accept", "accept");
 
-        var result = engine.ValidateChoices(new List<int> {1, 3, 3, 1, 2, 1});
+        var result = engine.ValidateChoices(new List<int> { 1, 3, 3, 1, 2, 1 });
         Assert.True(result.Item1);
         Assert.True(result.Item2.Count == 6);
     }
@@ -40,9 +40,9 @@ public class DecisionEngineTests
     [Fact]
     public void ValidateChoices_DenyDuplicateInput_ReturnsCorrectPair()
     {
-        var engine = new DecisionEngine(new string [] {"test", "test", "test"}, "accept", "deny");
+        var engine = new DecisionEngine(new string[] { "test", "test", "test" }, "accept", "deny");
 
-        var result = engine.ValidateChoices(new List<int> {1, 3, 3, 1, 2, 1});
+        var result = engine.ValidateChoices(new List<int> { 1, 3, 3, 1, 2, 1 });
         Assert.False(result.Item1);
         Assert.True(result.Item2.Count == 0);
     }
