@@ -1,74 +1,128 @@
-#
-# Install script for PSUserInput module.
-#
+<#
+    .SYNOPSIS
+    Install script for PSUserInput module.
+
+    .DESCRIPTION
+    Installs or packages the PSUserInput module. Installing means copying
+    the module files into one of the $env:PSModulePath entries. Packaging
+    means placing the module files into a zip archive located in
+    {PROJECT-ROOT}/Module/Packages. If unsatisfied by the default
+    locations, the path can also be given for both.
+
+    .PARAMETER Path
+    Specifies the path to which the module should be installed or packaged
+    in. Defaults are used when not set.
+
+    .PARAMETER Package
+    Specifies whether the script should package the module. By default it
+    is false.
+
+    .EXAMPLE
+    Interactive install
+    PS> ./install.ps1
+
+    .EXAMPLE
+    Manual install
+    PS> ./install.ps1 -Path 'C:\Program Files\Powershell'
+
+    .EXAMPLE
+    Package module
+    PS> ./install.ps1 -Package
+
+#>
 
 param(
-    # if set, the script copies module files to that location otherwise goes into interactive install
-    [string] $InstallDir,
-    # package the module instead in a zip file
+    [string] $Path,
     [switch] $Package
 )
 
-# module info globals
-$ModuleName     = 'PSUserInput'
-$ModuleRoot     = './Module'
-$ModuleDecl     = "$ModuleRoot/$ModuleName.psd1"
-$ModuleDLL      = "$ModuleRoot/bin/$ModuleName.dll"
-$ModuleLicense  = './LICENSE.txt'
-$ModulePackages = "$ModuleRoot/Packages" 
+$Module = @{
+    # info
+    Name     = 'PSUserInput'
+    Root     = './Module'
+    Packages = "./Module/Packages"
 
-# copies module files to specified location
-function InstallModule($Location)
+    # files
+    Manifest = "./Module/PSUserInput.psd1"
+    Binary   = "./Module/bin/PSUserInput.dll"
+    License  = './LICENSE.txt'
+}
+
+function ShowMessage($message)
 {
-    if (!(Test-Path $Location))
+    Write-Output "[INFO] $message"
+}
+
+function PackageModule($files, $pathGiven)
+{
+    ShowMessage 'Preparing to package module...'
+
+    $location = $Path
+    if (!$pathGiven)
     {
-        New-Item -ItemType Directory $Location
+        ShowMessage "No package path provided, using default ($($Module['Packages']))"
+        $location = $Module['Packages']
     }
 
-    $ModuleFiles = @($ModuleDecl, $ModuleDLL, $ModuleLicense)
+    $version = (Get-Module -ListAvailable $Module['Manifest']).Version
+    $packagePath = (Join-Path $location "$($Module['Name'])-$version.zip")
+    Compress-Archive -Force -Path $files -DestinationPath $packagePath
+
+    ShowMessage "Package created ($packagePath)"
+}
+
+function InstallModule($files, $pathGiven)
+{
+    ShowMessage 'Preparing to install module...'
+
+    $location = $Path
+    if (!$pathGiven)
+    {
+        Import-Module $Module.Binary
+        ShowMessage 'No install path provided, interactive install selected'
+        $location = (Read-MultipleChoiceInput -Message 'Select path to install module to:' -Answers $env:PSModulePath.Split(';')).Answer
+        Remove-Module $Module.Name
+    }
+
+    ShowMessage "Install path provided ($Location)"
+
+    $modulePath = (Join-Path $location $Module['Name'])
+    if (!(Test-Path $modulePath))
+    {
+        New-Item -ItemType Directory $modulePath
+    }
+    ShowMessage "Created module directory ($modulePath)"
+
+    Copy-Item $files $modulePath
+}
+
+function main()
+{
+    ShowMessage 'Building module in Release mode...'
+    dotnet build --configuration Release
+
+    $pathGiven = ($Path.Trim() -ne '')
+    $files = @($Module['Manifest'], $Module['Binary'], $Module['License'])
+
     if ($Package)
     {
-        Write-Output "Packaging module to location ($location)..."
-        $Version = (Get-Module -ListAvailable $ModuleDecl).Version
-        Compress-Archive -Path $ModuleFiles -DestinationPath "$Location/$ModuleName-$Version.zip"
+        PackageModule $files $pathGiven
+        ShowMessage 'Module packaging has been successful'
     }
     else
     {
-        Write-Output "Copying files to module location ($location)..."
-        Copy-Item -Path $ModuleFiles -Destination $Location
+        InstallModule $files $pathGiven
+        ShowMessage 'Module installation has been successful'
     }
 }
 
 $ErrorActionPreference = 'Stop'
 try
 {
-    dotnet build --configuration Release
-    Write-Output 'Installing module...'
-
-    $Location = $InstallDir
-    # package module
-    if ($Package)
-    {
-        $Location = $ModulePackages
-    }
-    # interactive install
-    elseif ($InstallDir -eq "")
-    {
-        Import-Module -Name $ModuleDLL
-
-        $PotentialLocations = $env:PSModulePath.Split(';')
-        $Location = Read-MultipleChoiceInput -Message 'Select ONE of the following module locations:' -Answers $PotentialLocations
-        $Location = (Join-Path $Location.Answer $ModuleName)
-
-        Remove-Module -Name $ModuleName
-    }
-    # manual install
-    InstallModule($Location)  
+    main
 }
 catch
 {
     $_
     exit
 }
-
-Write-Output 'Installation or packaging of module was successful.'
