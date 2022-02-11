@@ -37,12 +37,30 @@ namespace PSUserInput.Commands
         [Parameter()]
         public String Duplicates { get; set; } = "Deny";
 
+        private bool m_acceptList { get; set; }
+
+        protected override void BeginProcessing()
+        {
+            base.BeginProcessing();
+
+            if (List.ToLower() == "deny" && Duplicates.ToLower() != "deny")
+            {
+                ThrowTerminatingError(new ErrorRecord(
+                    new ArgumentException("Incompatible arguments 'List' and 'Duplicates', cannot have duplicates without accepting lists. Possible fix: set 'List' to 'Accept'"),
+                    "Incompatible Arguments",
+                    ErrorCategory.InvalidArgument,
+                    new object()
+                ));
+            }
+
+            m_acceptList = List.ToLower() == "accept";
+        }
+
         protected override void ProcessRecord()
         {
             base.ProcessRecord();
 
-            var acceptList = List.ToLower() == "accept";
-            var message = _constructMessage(acceptList);
+            var message = _constructMessage(m_acceptList);
             var parser = new Parser(Answers, List, Duplicates);
             var finalChoices = new List<int>();
             while (true)
@@ -59,7 +77,7 @@ namespace PSUserInput.Commands
             }
 
             var answers = _getAnswers(finalChoices);
-            if (acceptList)
+            if (m_acceptList)
                 WriteObject(answers);
             else
                 WriteObject(answers[0]);
